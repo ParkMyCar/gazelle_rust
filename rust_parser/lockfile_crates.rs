@@ -35,7 +35,7 @@ pub fn get_bazel_lockfile_crates(lockfile_path: PathBuf) -> Result<Vec<Package>,
     let mut crates = Vec::new();
 
     let mut add_crate = |id, is_proc_macro| {
-        let crate_ = context.crates.get(id).expect("missing crate");
+        let crate_ = context.crates.get(&id).expect("missing crate");
 
         if let Some(library_target_name) = &crate_.library_target_name {
             let mut package = Package::default();
@@ -53,35 +53,24 @@ pub fn get_bazel_lockfile_crates(lockfile_path: PathBuf) -> Result<Vec<Package>,
             .get(workspace_member)
             .expect("missing workspace member");
 
-        for dep in workspace_crate.common_attrs.deps.get_iter(None).unwrap() {
-            add_crate(&dep.id, false);
+        let deps = workspace_crate.common_attrs.deps.values();
+        for dep in deps {
+            add_crate(dep.id.clone(), false);
         }
 
-        for dep in workspace_crate
-            .common_attrs
-            .deps_dev
-            .get_iter(None)
-            .unwrap()
-        {
-            add_crate(&dep.id, false);
+        let deps = workspace_crate.common_attrs.deps_dev.values();
+        for dep in deps {
+            add_crate(dep.id.clone(), false);
         }
 
-        for proc_macro_dep in workspace_crate
-            .common_attrs
-            .proc_macro_deps
-            .get_iter(None)
-            .unwrap()
-        {
-            add_crate(&proc_macro_dep.id, true);
+        let deps = workspace_crate.common_attrs.proc_macro_deps.values();
+        for proc_macro_dep in deps {
+            add_crate(proc_macro_dep.id.clone(), true);
         }
 
-        for proc_macro_dep in workspace_crate
-            .common_attrs
-            .proc_macro_deps_dev
-            .get_iter(None)
-            .unwrap()
-        {
-            add_crate(&proc_macro_dep.id, true);
+        let deps = workspace_crate.common_attrs.proc_macro_deps_dev.values();
+        for proc_macro_dep in deps {
+            add_crate(proc_macro_dep.id.clone(), true);
         }
     }
 
